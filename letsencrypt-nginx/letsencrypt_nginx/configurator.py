@@ -167,6 +167,9 @@ class NginxConfigurator(common.Plugin):
             logger.info("Deployed Certificate to VirtualHost %s for %s",
                         vhost.filep, vhost.names)
         except errors.MisconfigurationError as error:
+            # TODO: Should not this raise a errors.PluginError the same way
+            # the apache plugin does?
+            # Returning false is not stopping the deployment
             logger.debug(error)
             logger.warn(
                 "Cannot find a cert or key directive in %s for %s. "
