@@ -213,20 +213,23 @@ class NginxConfigurator(common.Plugin):
 
         matches = self._get_ranked_matches(target_name)
         if not matches:
+            filep = None
+
             # Creates a new config file based on the location of the "default" vhost
             default = self._get_ranked_matches("_")
             if default:
                 default_vhost = default[0]['vhost']
                 vhost_conf_dir = os.path.dirname(default_vhost.filep)
-                filep = os.path.join(vhost_conf_dir, target_name + ".conf")
+                vhost_conf = os.path.join(vhost_conf_dir, target_name + ".conf")
 
                 # this is hackish but the parser does not allow adding new empty files
                 try:
-                    with open(filep, 'w') as f:
+                    with open(vhost_conf, 'w') as f:
                         f.write("server {\n  server_name %s;\n}" % (target_name))
                     self.parser.load()
+                    filep = vhost_conf
                 except:
-                    filep = None
+                    pass
 
             if filep is None:
                 # No matches. Create a new vhost with this name in nginx.conf.
