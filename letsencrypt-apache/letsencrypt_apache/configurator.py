@@ -197,7 +197,7 @@ class ApacheConfigurator(augeas_configurator.AugeasConfigurator):
                 "cert_key": self.parser.find_dir("SSLCertificateKeyFile", None, vhost.path)}
 
         # Only include if a certificate chain is specified
-        if chain_path is not None:
+        if chain_path:
             path["chain_path"] = self.parser.find_dir(
                 "SSLCertificateChainFile", None, vhost.path)
 
@@ -220,7 +220,7 @@ class ApacheConfigurator(augeas_configurator.AugeasConfigurator):
             set_cert_path = cert_path
             self.aug.set(path["cert_path"][-1], cert_path)
             self.aug.set(path["cert_key"][-1], key_path)
-            if chain_path is not None:
+            if chain_path:
                 self.parser.add_dir(vhost.path,
                                     "SSLCertificateChainFile", chain_path)
             else:
@@ -240,7 +240,7 @@ class ApacheConfigurator(augeas_configurator.AugeasConfigurator):
                             (vhost.filep,
                              ", ".join(str(addr) for addr in vhost.addrs),
                              set_cert_path, key_path))
-        if chain_path is not None:
+        if chain_path:
             self.save_notes += "\tSSLCertificateChainFile %s\n" % chain_path
 
         # Make sure vhost is enabled if distro with enabled / available
