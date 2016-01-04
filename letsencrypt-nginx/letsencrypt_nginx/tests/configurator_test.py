@@ -125,6 +125,18 @@ class NginxConfiguratorTest(util.NginxTest):
         self.assertTrue(util.contains_at_depth(generated_conf,
                                                ['ssl_trusted_certificate', 'example/chain.pem'], 2))
 
+    # --chain-path is not mandatory per --help install output 
+    def test_deploy_cert_stapling_requires_chain_path(self):
+        self.config.version = (1, 3, 7)
+        example_conf = self.config.parser.abs_path('sites-enabled/example.com')
+
+        self.assertRaises(errors.PluginError, self.config.deploy_cert,
+            "www.example.com",
+            "example/cert.pem",
+            "example/key.pem",
+            None,
+            None)
+
     def test_deploy_cert(self):
         server_conf = self.config.parser.abs_path('server.conf')
         nginx_conf = self.config.parser.abs_path('nginx.conf')
