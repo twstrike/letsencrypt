@@ -213,24 +213,7 @@ class NginxConfigurator(common.Plugin):
 
         matches = self._get_ranked_matches(target_name)
         if not matches:
-            filep = None
-
-            # Creates a new config file based on the location of the "default" vhost
-            default = self._get_ranked_matches("_")
-            if default:
-                default_vhost = default[0]['vhost']
-                vhost_conf_dir = os.path.dirname(default_vhost.filep)
-                vhost_conf = os.path.join(vhost_conf_dir, target_name + ".conf")
-
-                # this is hackish but the parser does not allow adding new empty files
-                try:
-                    with open(vhost_conf, 'w') as f:
-                        f.write("server {\n  server_name %s;\n}" % (target_name))
-                    self.parser.load()
-                    filep = vhost_conf
-                except:
-                    pass
-
+            filep = self._create_vhost_conf_at_default_dir(target_name)
             if filep is None:
                 # No matches. Create a new vhost with this name in nginx.conf.
                 filep = self.parser.loc["root"]
@@ -255,6 +238,25 @@ class NginxConfigurator(common.Plugin):
                 self._make_server_ssl(vhost)
 
         return vhost
+
+    def _create_vhost_conf_at_default_dir(self, target_name):
+        # Creates a new config file based on the location of the "default" vhost
+        default = self._get_ranked_matches("_")
+        if default:
+            default_vhost = default[0]['vhost']
+            vhost_conf_dir = os.path.dirname(default_vhost.filep)
+            vhost_conf = os.path.join(vhost_conf_dir, target_name + ".conf")
+
+            # this is hackish but the parser does not allow adding new empty files
+            try:
+                with open(vhost_conf, 'w') as f:
+                    f.write("server {\n  server_name %s;\n}" % (target_name))
+                self.parser.load()
+                return vhost_conf
+            except IOError:
+                pass
+
+        return None
 
     def _get_ranked_matches(self, target_name):
         """Returns a ranked list of vhosts that match target_name.
