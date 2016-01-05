@@ -242,21 +242,22 @@ class NginxConfigurator(common.Plugin):
     def _create_vhost_conf_at_default_dir(self, target_name):
         # Creates a new config file based on the location of the "default" vhost
         default = self._get_ranked_matches("_")
-        if default:
-            default_vhost = default[0]['vhost']
-            vhost_conf_dir = os.path.dirname(default_vhost.filep)
-            vhost_conf = os.path.join(vhost_conf_dir, target_name + ".conf")
+        if not default:
+            return None
 
-            # this is hackish but the parser does not allow adding new empty files
-            try:
-                with open(vhost_conf, 'w') as f:
-                    f.write("server {\n  server_name %s;\n}" % (target_name))
-                self.parser.load()
-                return vhost_conf
-            except IOError:
-                pass
+        default_vhost = default[0]['vhost']
+        conf_dir = os.path.dirname(default_vhost.filep)
+        conf_file = os.path.join(conf_dir, target_name + ".conf")
 
-        return None
+        # must create the file, otherwise the reverter fails
+        open(conf_file, 'a').close()
+
+        # create a vhost config for target
+        self.parser.parsed[conf_file] = [[
+            ['server'], [['server_name', target_name]]
+        ]]
+
+        return conf_file
 
     def _get_ranked_matches(self, target_name):
         """Returns a ranked list of vhosts that match target_name.
