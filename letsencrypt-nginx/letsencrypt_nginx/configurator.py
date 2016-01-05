@@ -213,13 +213,8 @@ class NginxConfigurator(common.Plugin):
 
         matches = self._get_ranked_matches(target_name)
         if not matches:
-            filep = self._create_vhost_conf_at_default_dir(target_name)
-            if filep is None:
-                # No matches. Create a new vhost with this name in nginx.conf.
-                filep = self.parser.loc["root"]
-                logger.info("Could not find the configuration for vhost '%s'. "
-                    "A new vhost configuration will be created in %s",
-                    target_name, filep)
+            filep = (self._create_vhost_conf_at_default_dir(target_name) or
+                    self.parser.loc["root"])
 
             new_block = [['server'], [['server_name', target_name]]]
             self.parser.add_http_directives(filep, new_block)
