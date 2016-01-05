@@ -4,15 +4,6 @@ import os
 import shutil
 import unittest
 
-import mock
-import OpenSSL
-
-from acme import challenges
-from acme import messages
-
-from letsencrypt import achallenges
-from letsencrypt import errors
-
 from letsencrypt_nginx.tests import util
 
 class NginxConfiguratorUbuntuTest(util.NginxTest):
@@ -33,16 +24,16 @@ class NginxConfiguratorUbuntuTest(util.NginxTest):
             self._test_choose_vhost_auto_detects_conf_dir(data_dir)
 
     def _test_choose_vhost_auto_detects_conf_dir(self, data_dir):
-        super(NginxConfiguratorUbuntuTest, self).setUp(data_dir)
+        self.setupData(data_dir)
 
-        self.config = util.get_nginx_configurator(
+        config = util.get_nginx_configurator(
             self.config_path, self.config_dir, self.work_dir)
 
         conf_path = {'new.com': os.path.join(data_dir, "sites-enabled/new.com.conf"),
                    'example.com': os.path.join(data_dir, "sites-enabled/existing")}
 
         for name in conf_path:
-            vhost = self.config.choose_vhost(name)
+            vhost = config.choose_vhost(name)
             path = os.path.relpath(vhost.filep, self.temp_dir)
 
             self.assertEqual(set([name]), vhost.names)

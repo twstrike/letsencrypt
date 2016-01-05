@@ -20,9 +20,10 @@ from letsencrypt_nginx import configurator
 
 class NginxTest(unittest.TestCase):  # pylint: disable=too-few-public-methods
 
-    def setUp(self, conf_dir="etc_nginx"):
-        super(NginxTest, self).setUp()
+    def setUp(self):
+        self.setupData("etc_nginx")
 
+    def setupData(self, conf_dir):
         self.temp_dir, self.config_dir, self.work_dir = common.dir_setup(
             conf_dir, "letsencrypt_nginx.tests")
 
@@ -34,7 +35,6 @@ class NginxTest(unittest.TestCase):  # pylint: disable=too-few-public-methods
 
         self.rsa512jwk = jose.JWKRSA.load(test_util.load_vector(
             "rsa512_key.pem"))
-
 
 def get_data_filename(filename):
     """Gets the filename of a test data file."""
