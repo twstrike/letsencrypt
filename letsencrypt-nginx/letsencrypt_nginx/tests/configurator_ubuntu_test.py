@@ -18,13 +18,10 @@ from letsencrypt_nginx.tests import util
 class NginxConfiguratorUbuntuTest(util.NginxTest):
     """Test a semi complex vhost configuration."""
 
-    DATA_DIR = "ubuntu_nginx_1_9_3"
-
     def setUp(self):
-        super(NginxConfiguratorUbuntuTest, self).setUp(self.DATA_DIR)
-
-        self.config = util.get_nginx_configurator(
-            self.config_path, self.config_dir, self.work_dir)
+        self.config_path = None
+        self.config_dir = None
+        self.work_dir = None
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
@@ -32,8 +29,17 @@ class NginxConfiguratorUbuntuTest(util.NginxTest):
         shutil.rmtree(self.work_dir)
 
     def test_choose_vhost_auto_detects_conf_dir(self):
-        conf_path = {'new.com': os.path.join(self.DATA_DIR, "sites-enabled/new.com.conf"),
-                   'example.com': os.path.join(self.DATA_DIR, "sites-enabled/existing")}
+        for data_dir in ["ubuntu_nginx_1_9_3", "ubuntu_nginx_1_4_6"]:
+            self._test_choose_vhost_auto_detects_conf_dir(data_dir)
+
+    def _test_choose_vhost_auto_detects_conf_dir(self, data_dir):
+        super(NginxConfiguratorUbuntuTest, self).setUp(data_dir)
+
+        self.config = util.get_nginx_configurator(
+            self.config_path, self.config_dir, self.work_dir)
+
+        conf_path = {'new.com': os.path.join(data_dir, "sites-enabled/new.com.conf"),
+                   'example.com': os.path.join(data_dir, "sites-enabled/existing")}
 
         for name in conf_path:
             vhost = self.config.choose_vhost(name)
