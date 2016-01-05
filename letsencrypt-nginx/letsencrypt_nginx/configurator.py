@@ -241,12 +241,18 @@ class NginxConfigurator(common.Plugin):
 
     def _create_vhost_conf_at_default_dir(self, target_name):
         # Creates a new config file based on the location of the "default" vhost
-        default = self._get_ranked_matches("_")
-        if not default:
+
+        # finds the most frequent path for vhost configurations
+        paths_freq = dict()
+        for vhost in self.parser.get_vhosts():
+            path = os.path.dirname(vhost.filep)
+            paths_freq.setdefault(path, 0)
+            paths_freq[path] += 1
+
+        if len(paths_freq) == 0:
             return None
 
-        default_vhost = default[0]['vhost']
-        conf_dir = os.path.dirname(default_vhost.filep)
+        conf_dir = max(paths_freq.iterkeys(), key=(lambda key: paths_freq[key]))
         conf_file = os.path.join(conf_dir, target_name + ".conf")
 
         # must create the file, otherwise the reverter fails
