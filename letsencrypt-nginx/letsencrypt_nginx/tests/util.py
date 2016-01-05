@@ -24,6 +24,7 @@ class NginxTest(unittest.TestCase):  # pylint: disable=too-few-public-methods
         self.setupData("etc_nginx")
 
     def setupData(self, conf_dir):
+        """Setup test data for nginx tests."""
         self.temp_dir, self.config_dir, self.work_dir = common.dir_setup(
             conf_dir, "letsencrypt_nginx.tests")
 
