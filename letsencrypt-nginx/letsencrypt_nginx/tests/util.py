@@ -20,17 +20,17 @@ from letsencrypt_nginx import configurator
 
 class NginxTest(unittest.TestCase):  # pylint: disable=too-few-public-methods
 
-    def setUp(self):
+    def setUp(self, conf_dir="etc_nginx"):
         super(NginxTest, self).setUp()
 
         self.temp_dir, self.config_dir, self.work_dir = common.dir_setup(
-            "etc_nginx", "letsencrypt_nginx.tests")
+            conf_dir, "letsencrypt_nginx.tests")
 
         self.ssl_options = common.setup_ssl_options(
             self.config_dir, constants.MOD_SSL_CONF_SRC,
             constants.MOD_SSL_CONF_DEST)
 
-        self.config_path = os.path.join(self.temp_dir, "etc_nginx")
+        self.config_path = os.path.join(self.temp_dir, conf_dir)
 
         self.rsa512jwk = jose.JWKRSA.load(test_util.load_vector(
             "rsa512_key.pem"))
