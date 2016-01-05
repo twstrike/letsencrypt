@@ -443,8 +443,7 @@ class NginxConfigurator(common.Plugin):
     def config_test(self):  # pylint: disable=no-self-use
         """Check the configuration of Nginx for errors.
 
-        :returns: Success
-        :rtype: bool
+        :raises .errors.MisconfigurationError: If config_test fails
 
         """
         try:
@@ -454,15 +453,11 @@ class NginxConfigurator(common.Plugin):
                 stderr=subprocess.PIPE)
             stdout, stderr = proc.communicate()
         except (OSError, ValueError):
-            logger.fatal("Unable to run nginx config test")
-            sys.exit(1)
+            raise errors.MisconfigurationError("Unable to run nginx config test")
 
         if proc.returncode != 0:
-            # Enter recovery routine...
-            logger.error("Config test failed\n%s\n%s", stdout, stderr)
-            return False
-
-        return True
+            raise errors.MisconfigurationError("Config test failed\n%s\n%s",
+                    stdout, stderr)
 
     def _verify_setup(self):
         """Verify the setup to ensure safe operating environment.
