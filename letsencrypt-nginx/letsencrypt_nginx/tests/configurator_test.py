@@ -98,6 +98,78 @@ class NginxConfiguratorTest(util.NginxTest):
                                         ]]],
                          parsed[0])
 
+    def test_bad_save_checkpoint(self):
+        self.config.reverter.add_to_checkpoint = mock.Mock(
+            side_effect=errors.ReverterError)
+        """
+        TODO: augeas test is having a add_dir seems to
+        triggering the error or try to go inside of a
+        branch where add_to_checkpoint is called.
+        We need to look into it
+        self.config.parser.add_dir(
+            self.vh_truth[0].path, "Test", "bad_save_ckpt")
+        """
+        self.assertRaises(errors.PluginError, self.config.save)
+
+    def test_bad_save_finalize_checkpoint(self):
+        self.config.reverter.finalize_checkpoint = mock.Mock(
+            side_effect=errors.ReverterError)
+        self.assertRaises(errors.PluginError, self.config.save, "Title")
+
+    def test_finalize_save(self):
+        mock_finalize = mock.Mock()
+        self.config.reverter = mock_finalize
+        self.config.save("Example Title")
+
+        self.assertTrue(mock_finalize.is_called)
+
+    def test_recovery_routine(self):
+        mock_load = mock.Mock()
+        self.config.parser.load = mock_load
+
+        self.config.recovery_routine()
+        self.assertEqual(mock_load.call_count, 1)
+
+    def test_recovery_routine_error(self):
+        self.config.reverter.recovery_routine = mock.Mock(
+            side_effect=errors.ReverterError)
+
+        self.assertRaises(
+            errors.PluginError, self.config.recovery_routine)
+
+    def test_revert_challenge_config(self):
+        mock_load = mock.Mock()
+        self.config.parser.load = mock_load
+
+        self.config.revert_challenge_config()
+        self.assertEqual(mock_load.call_count, 1)
+
+    def test_revert_challenge_config_error(self):
+        self.config.reverter.revert_temporary_config = mock.Mock(
+            side_effect=errors.ReverterError)
+
+        self.assertRaises(
+            errors.PluginError, self.config.revert_challenge_config)
+
+    def test_revert_challenge_config_error(self):
+        self.config.reverter.revert_temporary_config = mock.Mock(
+            side_effect=errors.ReverterError)
+
+        self.assertRaises(
+            errors.PluginError, self.config.revert_challenge_config)
+
+    def test_rollback_checkpoints(self):
+        mock_load = mock.Mock()
+        self.config.parser.load = mock_load
+
+        self.config.rollback_checkpoints()
+        self.assertEqual(mock_load.call_count, 1)
+
+    def test_rollback_checkpoints_error(self):
+        self.config.reverter.rollback_checkpoints = mock.Mock(
+            side_effect=errors.ReverterError)
+        self.assertRaises(errors.PluginError, self.config.rollback_checkpoints)
+
     def test_choose_vhost(self):
         localhost_conf = set(['localhost', r'~^(www\.)?(example|bar)\.'])
         server_conf = set(['somename', 'another.alias', 'alias'])
