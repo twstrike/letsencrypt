@@ -511,21 +511,31 @@ class NginxConfigurator(common.Plugin):
         :param bool temporary: Indicates whether the changes made will
             be quickly reversed in the future (ie. challenges)
 
+        :raises .errors.PluginError: If there was an error in Nginx, in
+            an attempt to save the configuration, or an error creating a
+            checkpoint
+
         """
         save_files = set(self.parser.parsed.keys())
 
-        # Create Checkpoint
-        if temporary:
-            self.reverter.add_to_temp_checkpoint(
-                save_files, self.save_notes)
-        else:
-            self.reverter.add_to_checkpoint(save_files,
+        try:
+            # Create Checkpoint
+            if temporary:
+                self.reverter.add_to_temp_checkpoint(
+                    save_files, self.save_notes)
+            else:
+                self.reverter.add_to_checkpoint(save_files,
                                             self.save_notes)
+        except errors.ReverterError as err:
+            raise errors.PluginError(str(err))
 
         # Change 'ext' to something else to not override existing conf files
         self.parser.filedump(ext='')
         if title and not temporary:
-            self.reverter.finalize_checkpoint(title)
+            try:
+                self.reverter.finalize_checkpoint(title)
+            except errors.ReverterError as err:
+                raise errors.PluginError(str(err))
 
         return True
 
@@ -534,13 +544,25 @@ class NginxConfigurator(common.Plugin):
 
         Reverts all modified files that have not been saved as a checkpoint
 
+        :raises .errors.PluginError: If unable to recover the configuration
+
         """
-        self.reverter.recovery_routine()
+        try:
+            self.reverter.recovery_routine()
+        except errors.ReverterError as err:
+            raise errors.PluginError(str(err))
         self.parser.load()
 
     def revert_challenge_config(self):
-        """Used to cleanup challenge configurations."""
-        self.reverter.revert_temporary_config()
+        """Used to cleanup challenge configurations.
+
+        :raises .errors.PluginError: If unable to revert the challenge config.
+
+        """
+        try:
+            self.reverter.revert_temporary_config()
+        except errors.ReverterError as err:
+            raise errors.PluginError(str(err))
         self.parser.load()
 
     def rollback_checkpoints(self, rollback=1):
@@ -548,13 +570,28 @@ class NginxConfigurator(common.Plugin):
 
         :param int rollback: Number of checkpoints to revert
 
+        :raises .errors.PluginError: If there is a problem with the input or
+            the function is unable to correctly revert the configuration
+
         """
-        self.reverter.rollback_checkpoints(rollback)
+        try:
+            self.reverter.rollback_checkpoints(rollback)
+        except errors.ReverterError as err:
+            raise errors.PluginError(str(err))
         self.parser.load()
 
     def view_config_changes(self):
-        """Show all of the configuration changes that have taken place."""
-        self.reverter.view_config_changes()
+        """Show all of the configuration changes that have taken place.
+
+        :raises .errors.PluginError: If there is a problem while processing
+            the checkpoints directories.
+
+        """
+
+        try:
+            self.reverter.view_config_changes()
+        except errors.ReverterError as err:
+            raise errors.PluginError(str(err))
 
     ###########################################################################
     # Challenges Section for IAuthenticator
