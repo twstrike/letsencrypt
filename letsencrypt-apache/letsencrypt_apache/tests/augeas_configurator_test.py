@@ -97,7 +97,7 @@ class AugeasConfiguratorTest(util.ApacheTest):
         self.config.rollback_checkpoints()
         self.assertEqual(mock_load.call_count, 1)
 
-    def test_rollback_error(self):
+    def test_rollback_checkpoints_error(self):
         self.config.reverter.rollback_checkpoints = mock.Mock(
             side_effect=errors.ReverterError)
         self.assertRaises(errors.PluginError, self.config.rollback_checkpoints)
